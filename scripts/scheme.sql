@@ -64,28 +64,34 @@ CREATE TABLE order_items (
 CREATE TABLE inventory_logs (
                                 id SERIAL PRIMARY KEY,
                                 product_id INT REFERENCES products(id) ON DELETE CASCADE,
-                                quantity_changed INT NOT NULL,
-                                change_reason VARCHAR(255) NOT NULL,
-                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                                change_amount INT NOT NULL,
+                                change_type VARCHAR(50) CHECK (change_type IN ('Purchase', 'Sale', 'Restock', 'Adjustment')),
+                                change_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE payments (
                           id SERIAL PRIMARY KEY,
                           order_id INT REFERENCES orders(id) ON DELETE CASCADE,
                           amount NUMERIC(10, 2) NOT NULL CHECK (amount >= 0),
-                          payment_method VARCHAR(50) NOT NULL,
-                          payment_status VARCHAR(50) NOT NULL CHECK (payment_status IN ('Pending', 'Completed', 'Failed')),
-                          transaction_id VARCHAR(255) UNIQUE,
-                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                          payment_method VARCHAR(50) CHECK (payment_method IN ('Credit Card', 'PayPal', 'Bank Transfer')),
+                          payment_status VARCHAR(50) CHECK (payment_status IN ('Paid', 'Unpaid')),
+                          payment_date TIMESTAMP,
+                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE shipping (
-                          id SERIAL PRIMARY KEY,
-                          order_id INT REFERENCES orders(id) ON DELETE CASCADE,
-                          shipping_method VARCHAR(50) NOT NULL,
-                          tracking_number VARCHAR(255),
-                          shipping_status VARCHAR(50) NOT NULL CHECK (shipping_status IN ('In Transit', 'Delivered', 'Canceled')),
-                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE shipments (
+                           id SERIAL PRIMARY KEY,
+                           order_id INT REFERENCES orders(id) ON DELETE CASCADE,
+                           shipment_method VARCHAR(50),
+                           tracking_number VARCHAR(100),
+                           shipment_status VARCHAR(50) CHECK (shipment_status IN ('Pending', 'Shipped', 'Delivered', 'Returned')),
+                           shipped_date TIMESTAMP,
+                           delivered_date TIMESTAMP,
+                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE reviews (
